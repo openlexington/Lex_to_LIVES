@@ -1,48 +1,13 @@
 require 'csv'
 
-scores = CSV.read("restaurant_scores.csv") #TODO: Change this to take in passed filename
-
-businesses = [["business_id", "name", "address", "city", "state"]]
-violations = [["business_id", "date", "code"]]
-inspections = [["business_id", "score", "date"]]
-
 def convert_date_format(date)
-  new_date = date[7..10]
-  month_string = date[3..5]
-  # months = %(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
-  # month = '%00d' % (months.index(month_string.to_i) || 0)
-  case month_string
-  when "Jan"
-    month = "01"
-  when "Feb"
-    month = "02"
-  when "Mar"
-    month = "03"
-  when "Apr"
-    month = "04"
-  when "May"
-    month = "05"
-  when "Jun"
-    month = "06"
-  when "Jul"
-    month = "07"
-  when "Aug"
-    month = "08"
-  when "Sep"
-    month = "09"
-  when "Oct"
-    month = "10"
-  when "Nov"
-    month = "11"
-  when "Dec"
-    month = "12"
-  else
-    month = "00"
-  end
+  months = %w(off-by-one Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
 
+  day, month, year = date.split('-')
+  month = months.index(month) || 0
   day = date[0..1]
 
-  new_date += month + day
+  sprintf('%d%02d%02d', year.to_i, month.to_i, day.to_i)
 end
 
 
@@ -92,33 +57,46 @@ def violation_desc(violation_id)
   descriptions[violation_id.to_i]
 end
 
-scores.shift
 
-scores.each do |entry|
+businesses = [["business_id", "name", "address", "city", "state"]]
+violations = [["business_id", "date", "code"]]
+inspections = [["business_id", "score", "date"]]
+
+infile = ARGV.shift
+
+if infile.nil? || infile.empty?
+  raise "Specify an input file: #{__FILE__} <infile>"
+end
+
+CSV.foreach(infile, headers: true, header_converters: :symbol) do |entry|
+  # reporting_area:605 premise_name:"#1 CHINA BUFFET" premise_address_1:"125 E. REYNOLDS ROAD, STE. 120" inspection_date:"12-Apr-2012" inspection_type:1 score:96 owner_name:"#1 CHINA BUFFET" critical_:nil violation:19 inspection_id:805726 violation:19 r_f_insp:nil inspection_id:805726 violation:19 weight:1 critical_yn:"NO"
+
   # Businesses
-  business_entry = []
-  business_entry.push(entry[0])
-  business_entry.push(entry[1])
-  business_entry.push(entry[2])
-  business_entry.push("Lexington")
-  business_entry.push("KY")
+  business_entry = [
+    entry[:reporting_area],
+    entry[:premise_name],
+    entry[:premise_address_1],
+    "Lexington",
+    "KY"
+  ]
 
   businesses.push(business_entry)
 
   # Inspections
-  inspection_entry = []
-  inspection_entry.push(entry[0])
-  inspection_entry.push(entry[5])
-  inspection_entry.push(convert_date_format(entry[3]))
+  inspection_entry = [
+    entry[:reporting_area],
+    entry[:score],
+    convert_date_format(entry[:inspection_date])
+  ]
 
   inspections.push(inspection_entry)
 
   # Violations
-  violation_entry = []
-  violation_entry.push(entry[0])
-  violation_entry.push(convert_date_format(entry[3]))
-  violation_entry.push(entry[8])
-  #violation_entry.push(violation_desc(entry[8]))
+  violation_entry = [
+    entry[:reporting_area],
+    convert_date_format(entry[:inspection_date]),
+    violation_desc(entry[:violation])
+  ]
 
   violations.push(violation_entry)
 end
