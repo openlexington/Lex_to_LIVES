@@ -9,6 +9,8 @@ inspections = [["business_id", "score", "date"]]
 def convert_date_format(date)
   new_date = date[7..10]
   month_string = date[3..5]
+  # months = %(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
+  # month = '%00d' % (months.index(month_string.to_i) || 0)
   case month_string
   when "Jan"
     month = "01"
@@ -45,87 +47,49 @@ end
 
 
 def violation_desc(violation_id)
-  # BROKEN
- case
- when "1"
-   desc = "Source, Records, Condition, Spoilage, Adulterated"
- when "2"
-   desc = "Container, properly labeled"
- when "3"
-   desc = "Potentially hazardous food - safe temp"
- when "4"
-   desc = ""
- when "5"
-   desc = ""
- when "6"
-   desc = ""
- when "7"
-   desc = ""
- when "8"
-   desc = ""
- when "9"
-   desc = ""
- when "10"
-   desc = ""
- when "11"
-   desc = ""
- when "12"
-   desc = ""
- when "13"
-   desc = ""
- when "14"
-   desc = ""
- when "15"
-   desc = ""
- when "16"
-   desc = ""
- when "17"
-   desc = ""
- when "18"
-   desc = ""
- when "19"
-   desc = ""
- when "20"
-   desc = ""
- when "21"
-   desc = ""
- when "22"
-   desc = ""
- when "23"
-   desc = ""
- when "24"
-   desc = ""
- when "25"
-   desc = ""
- when "26"
-   desc = ""
- when "27"
-   desc = ""
- when "28"
-   desc = ""
- when "29"
-   desc = ""
- when "30"
-   desc = ""
- when "31"
-   desc = ""
- when "32"
-   desc = ""
- when "33"
-   desc = ""
- when "34"
-   desc = ""
- when "35"
-   desc = ""
- when "36"
-   desc = ""
- when "37"
-   desc = ""
- when "38"
-   desc = ""
- else
-   desc = ""
- end
+  # As a hash for easier maintenance
+  descriptions = {
+    1  => 'FOOD SOURCES: Source, Records, Condition, Spoilage, Adulterated',
+    2  => 'FOOD SOURCES: Container, properly labeled',
+    3  => 'FOOD PROTECTION: Potentially hazardous food - safe temp.',
+    4  => 'FOOD PROTECTION: Facilities to maintain product temp.',
+    5  => 'FOOD PROTECTION: Thermometers provided and conspicuous',
+    6  => 'FOOD PROTECTION: Potentially hazardous food properly thawed',
+    7  => 'FOOD PROTECTION: Pot. hazardous food not re-served',
+    8  => 'FOOD PROTECTION: Food Protection - storage, prep, display, service, transp.',
+    9  => 'FOOD PROTECTION: Handling of food (ice) minimized. Dispensing utensils properly stored during use.',
+    10 => 'PERSONNEL: Personnel with infections restricted & proper reporting',
+    11 => 'PERSONNEL: Hands washed and clean, hygienic practices preventing contamination from hands',
+    12 => 'PERSONNEL: Clean clothes, hair restraints',
+    13 => 'PERSONNEL: Supervision: Person in charge present and demonstrates knowledge of food safety principles',
+    14 => 'FOOD EQUIPMENT & UTENSILS: Food (ice) contact surfaces designed, constructed, maintained, installed',
+    15 => 'FOOD EQUIPMENT & UTENSILS: Food/Non-food contact surfaces designed, constructed, maintained, installed',
+    16 => 'FOOD EQUIPMENT & UTENSILS: Dishwashing facilities designed, constructed, maintained, installed, located, operated. Accurate therm., chem. test kits, gauge',
+    17 => 'FOOD EQUIPMENT & UTENSILS: Sanitization rinse, temp., conce., exp. time, equip. utensils, sanitized',
+    18 => 'FOOD EQUIPMENT & UTENSILS: Wiping cloths clean, use restricted',
+    19 => 'FOOD EQUIPMENT & UTENSILS: Food/Non-food contact surfaces of equip/utensils clean',
+    20 => 'FOOD EQUIPMENT & UTENSILS: Storage, handling of clean equipment/utensils/single service articles',
+    21 => 'WATER: Water source, safe, hot & cold',
+    22 => 'SEWAGE: Sewage and waste disposal',
+    23 => 'PLUMBING: Installed, maintained',
+    24 => 'PLUMBING: Cross-connection, back siphonage, backflow',
+    25 => 'TOILET & HANDWASHING FACILITIES: No., conv., designed, installed',
+    26 => 'TOILET & HANDWASHING FACILITIES: Toilet rooms enclosed, self-closing doors, fixtures, good repair, clean, tissue, hand cleansers, sanitary towels/hand-drying devices provided, proper waste receptacles',
+    27 => 'GARBAGE DISPOSAL: Containers or receptacles, covered, adequate number, insect/rodent proof, frequency, clean. Outside storage area enclosures properly constructed, clean, controlled incineration.',
+    28 => 'INSECT, RODENT, ANIMAL CONTROL: No insects, rodents, birds, turtles, other animals',
+    29 => 'OUTER OPENINGS: Outer openings protected',
+    30 => 'FLOORS, WALLS, CEILINGS & VENTILATION: Floors constructed, drained, clean, good repair, covering installation, easily cleanable',
+    31 => 'FLOORS, WALLS, CEILINGS & VENTILATION: Walls, ceiling, attached equipment constructed, good repair, clean surfaces, easily cleanable. Rooms and equipment vented as required.',
+    32 => 'LIGHTING: Lighting provided as required, fixtures shielded',
+    33 => 'OTHER OPERATIONS: Toxic Items properly stored, labeled, used',
+    34 => 'OTHER OPERATIONS: Premises main, free of litter, misc. articles, cleaning/maint. equip. properly stored. Authorized personnel rooms clean, lockers provided, located, used.',
+    35 => 'OTHER OPERATIONS: Separation from living/sleeping quarters. Laundry, clean or soiled linen properly stored.',
+    36 => 'CONFORMANCE WITH APPROVED PROCEDURES: Compliance with variance, specialized process, and HACCP plan',
+    37 => 'HIGHLY SUSCEPTIBLE POPULATIONS: Pasteurized foods used; prohibited foods not offered',
+    38 => 'CONSUMER ADVISORY: Consumer advisory provided for raw or undercooked food'
+  }
+
+  descriptions[violation_id.to_i]
 end
 
 scores.shift
