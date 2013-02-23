@@ -1,6 +1,7 @@
 require 'csv'
 
 def convert_date_format(date)
+  # 'off-by-one' puts January at index 1 so #index returns the right month number.
   months = %w(off-by-one Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
 
   day, month, year = date.split('-')
