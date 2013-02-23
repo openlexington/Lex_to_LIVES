@@ -1,160 +1,103 @@
 require 'csv'
 
-scores = CSV.read("restaurant_scores.csv") #TODO: Change this to take in passed filename
+def convert_date_format(date)
+  # 'off-by-one' puts January at index 1 so #index returns the right month number.
+  months = %w(off-by-one Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
+
+  day, month, year = date.split('-')
+  month = months.index(month) || 0
+  day = date[0..1]
+
+  sprintf('%d%02d%02d', year.to_i, month.to_i, day.to_i)
+end
+
+
+def violation_desc(violation_id)
+  # As a hash for easier maintenance
+  descriptions = {
+    1  => 'FOOD SOURCES: Source, Records, Condition, Spoilage, Adulterated',
+    2  => 'FOOD SOURCES: Container, properly labeled',
+    3  => 'FOOD PROTECTION: Potentially hazardous food - safe temp.',
+    4  => 'FOOD PROTECTION: Facilities to maintain product temp.',
+    5  => 'FOOD PROTECTION: Thermometers provided and conspicuous',
+    6  => 'FOOD PROTECTION: Potentially hazardous food properly thawed',
+    7  => 'FOOD PROTECTION: Pot. hazardous food not re-served',
+    8  => 'FOOD PROTECTION: Food Protection - storage, prep, display, service, transp.',
+    9  => 'FOOD PROTECTION: Handling of food (ice) minimized. Dispensing utensils properly stored during use.',
+    10 => 'PERSONNEL: Personnel with infections restricted & proper reporting',
+    11 => 'PERSONNEL: Hands washed and clean, hygienic practices preventing contamination from hands',
+    12 => 'PERSONNEL: Clean clothes, hair restraints',
+    13 => 'PERSONNEL: Supervision: Person in charge present and demonstrates knowledge of food safety principles',
+    14 => 'FOOD EQUIPMENT & UTENSILS: Food (ice) contact surfaces designed, constructed, maintained, installed',
+    15 => 'FOOD EQUIPMENT & UTENSILS: Food/Non-food contact surfaces designed, constructed, maintained, installed',
+    16 => 'FOOD EQUIPMENT & UTENSILS: Dishwashing facilities designed, constructed, maintained, installed, located, operated. Accurate therm., chem. test kits, gauge',
+    17 => 'FOOD EQUIPMENT & UTENSILS: Sanitization rinse, temp., conce., exp. time, equip. utensils, sanitized',
+    18 => 'FOOD EQUIPMENT & UTENSILS: Wiping cloths clean, use restricted',
+    19 => 'FOOD EQUIPMENT & UTENSILS: Food/Non-food contact surfaces of equip/utensils clean',
+    20 => 'FOOD EQUIPMENT & UTENSILS: Storage, handling of clean equipment/utensils/single service articles',
+    21 => 'WATER: Water source, safe, hot & cold',
+    22 => 'SEWAGE: Sewage and waste disposal',
+    23 => 'PLUMBING: Installed, maintained',
+    24 => 'PLUMBING: Cross-connection, back siphonage, backflow',
+    25 => 'TOILET & HANDWASHING FACILITIES: No., conv., designed, installed',
+    26 => 'TOILET & HANDWASHING FACILITIES: Toilet rooms enclosed, self-closing doors, fixtures, good repair, clean, tissue, hand cleansers, sanitary towels/hand-drying devices provided, proper waste receptacles',
+    27 => 'GARBAGE DISPOSAL: Containers or receptacles, covered, adequate number, insect/rodent proof, frequency, clean. Outside storage area enclosures properly constructed, clean, controlled incineration.',
+    28 => 'INSECT, RODENT, ANIMAL CONTROL: No insects, rodents, birds, turtles, other animals',
+    29 => 'OUTER OPENINGS: Outer openings protected',
+    30 => 'FLOORS, WALLS, CEILINGS & VENTILATION: Floors constructed, drained, clean, good repair, covering installation, easily cleanable',
+    31 => 'FLOORS, WALLS, CEILINGS & VENTILATION: Walls, ceiling, attached equipment constructed, good repair, clean surfaces, easily cleanable. Rooms and equipment vented as required.',
+    32 => 'LIGHTING: Lighting provided as required, fixtures shielded',
+    33 => 'OTHER OPERATIONS: Toxic Items properly stored, labeled, used',
+    34 => 'OTHER OPERATIONS: Premises main, free of litter, misc. articles, cleaning/maint. equip. properly stored. Authorized personnel rooms clean, lockers provided, located, used.',
+    35 => 'OTHER OPERATIONS: Separation from living/sleeping quarters. Laundry, clean or soiled linen properly stored.',
+    36 => 'CONFORMANCE WITH APPROVED PROCEDURES: Compliance with variance, specialized process, and HACCP plan',
+    37 => 'HIGHLY SUSCEPTIBLE POPULATIONS: Pasteurized foods used; prohibited foods not offered',
+    38 => 'CONSUMER ADVISORY: Consumer advisory provided for raw or undercooked food'
+  }
+
+  descriptions[violation_id.to_i]
+end
+
 
 businesses = [["business_id", "name", "address", "city", "state"]]
 violations = [["business_id", "date", "code"]]
 inspections = [["business_id", "score", "date"]]
 
-def convert_date_format(date)
-  new_date = date[7..10]
-  month_string = date[3..5]
-  case month_string
-  when "Jan"
-    month = "01"
-  when "Feb"
-    month = "02"
-  when "Mar"
-    month = "03"
-  when "Apr"
-    month = "04"
-  when "May"
-    month = "05"
-  when "Jun"
-    month = "06"
-  when "Jul"
-    month = "07"
-  when "Aug"
-    month = "08"
-  when "Sep"
-    month = "09"
-  when "Oct"
-    month = "10"
-  when "Nov"
-    month = "11"
-  when "Dec"
-    month = "12"
-  else
-    month = "00"
-  end
+infile = ARGV.shift
 
-  day = date[0..1]
-
-  new_date += month + day
+if infile.nil? || infile.empty?
+  raise "Specify an input file: #{__FILE__} <infile>"
 end
 
+CSV.foreach(infile, headers: true, header_converters: :symbol) do |entry|
+  # reporting_area:605 premise_name:"#1 CHINA BUFFET" premise_address_1:"125 E. REYNOLDS ROAD, STE. 120" inspection_date:"12-Apr-2012" inspection_type:1 score:96 owner_name:"#1 CHINA BUFFET" critical_:nil violation:19 inspection_id:805726 violation:19 r_f_insp:nil inspection_id:805726 violation:19 weight:1 critical_yn:"NO"
 
-def violation_desc(violation_id)
-  # BROKEN
- case
- when "1"
-   desc = "Source, Records, Condition, Spoilage, Adulterated"
- when "2"
-   desc = "Container, properly labeled"
- when "3"
-   desc = "Potentially hazardous food - safe temp"
- when "4"
-   desc = ""
- when "5"
-   desc = ""
- when "6"
-   desc = ""
- when "7"
-   desc = ""
- when "8"
-   desc = ""
- when "9"
-   desc = ""
- when "10"
-   desc = ""
- when "11"
-   desc = ""
- when "12"
-   desc = ""
- when "13"
-   desc = ""
- when "14"
-   desc = ""
- when "15"
-   desc = ""
- when "16"
-   desc = ""
- when "17"
-   desc = ""
- when "18"
-   desc = ""
- when "19"
-   desc = ""
- when "20"
-   desc = ""
- when "21"
-   desc = ""
- when "22"
-   desc = ""
- when "23"
-   desc = ""
- when "24"
-   desc = ""
- when "25"
-   desc = ""
- when "26"
-   desc = ""
- when "27"
-   desc = ""
- when "28"
-   desc = ""
- when "29"
-   desc = ""
- when "30"
-   desc = ""
- when "31"
-   desc = ""
- when "32"
-   desc = ""
- when "33"
-   desc = ""
- when "34"
-   desc = ""
- when "35"
-   desc = ""
- when "36"
-   desc = ""
- when "37"
-   desc = ""
- when "38"
-   desc = ""
- else
-   desc = ""
- end
-end
-
-scores.shift
-
-scores.each do |entry|
   # Businesses
-  business_entry = []
-  business_entry.push(entry[0])
-  business_entry.push(entry[1])
-  business_entry.push(entry[2])
-  business_entry.push("Lexington")
-  business_entry.push("KY")
+  business_entry = [
+    entry[:reporting_area],
+    entry[:premise_name],
+    entry[:premise_address_1],
+    "Lexington",
+    "KY"
+  ]
 
   businesses.push(business_entry)
 
   # Inspections
-  inspection_entry = []
-  inspection_entry.push(entry[0])
-  inspection_entry.push(entry[5])
-  inspection_entry.push(convert_date_format(entry[3]))
+  inspection_entry = [
+    entry[:reporting_area],
+    entry[:score],
+    convert_date_format(entry[:inspection_date])
+  ]
 
   inspections.push(inspection_entry)
 
   # Violations
-  violation_entry = []
-  violation_entry.push(entry[0])
-  violation_entry.push(convert_date_format(entry[3]))
-  violation_entry.push(entry[8])
-  #violation_entry.push(violation_desc(entry[8]))
+  violation_entry = [
+    entry[:reporting_area],
+    convert_date_format(entry[:inspection_date]),
+    violation_desc(entry[:violation])
+  ]
 
   violations.push(violation_entry)
 end
