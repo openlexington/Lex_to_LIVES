@@ -60,7 +60,7 @@ end
 
 
 businesses = [["business_id", "name", "address", "city", "state"]]
-violations = [["business_id", "date", "code"]]
+violations = [["business_id", "date", "code", "description"]]
 inspections = [["business_id", "score", "date"]]
 
 infile = ARGV.shift
@@ -96,6 +96,7 @@ CSV.foreach(infile, headers: true, header_converters: :symbol) do |entry|
   violation_entry = [
     entry[:reporting_area],
     convert_date_format(entry[:inspection_date]),
+    entry[:violation],
     violation_desc(entry[:violation])
   ]
 
