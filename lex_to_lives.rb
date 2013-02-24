@@ -40,9 +40,9 @@ class LexToLIVES
 
     csv_parse(infile)
 
-    csv_write(businesses_csv_file, Business.members, businesses.uniq)
-    csv_write(inspections_csv_file, Inspection.members, inspections.uniq)
-    csv_write(violations_csv_file, Violation.members, violations.uniq)
+    csv_write(businesses_csv_file, Business.members, businesses)
+    csv_write(inspections_csv_file, Inspection.members, inspections)
+    csv_write(violations_csv_file, Violation.members, violations)
   end
 
   # Read Lexington-format CSV file, parse into internal data structs.
@@ -57,6 +57,10 @@ class LexToLIVES
       inspections << parse_inspection(entry)
       violations  << parse_violation(entry)
     end
+
+    businesses.uniq!
+    inspections.uniq!
+    violations.uniq!
   end
 
   # Write LIVES-format CSV file from internal data structs.
