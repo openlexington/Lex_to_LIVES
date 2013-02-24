@@ -19,25 +19,37 @@ class LexToLIVES
   attr_accessor :inspections_csv_file
   attr_accessor :violations_csv_file
 
-  def self.transform(source_file = nil)
-    if source_file.nil? || source_file.empty?
-      raise ArgumentError, "No input file specified."
-    end
+  attr_accessor :businesses
+  attr_accessor :violations
+  attr_accessor :inspections
 
-    new(source_file).transform
-  end
+  class Business < Struct.new(:business_id, :name, :address, :city, :state); end
+  class Violation < Struct.new(:business_id, :date, :code, :description); end
+  class Inspection < Struct.new(:business_id, :score, :date); end
 
-  def initialize(source_file, options = {})
+  def initialize(source_file = nil, options = {})
     @source_csv_file = source_file
     @businesses_csv_file = options[:businesses_file] || 'businesses.csv'
     @inspections_csv_file = options[:inspections_file] || 'inspections.csv'
     @violations_csv_file = options[:violations_file] || 'violations.csv'
   end
 
-  def transform(infile = @source_csv_file)
-    businesses  = [["business_id", "name", "address", "city", "state"]]
-    violations  = [["business_id", "date", "code", "description"]]
-    inspections = [["business_id", "score", "date"]]
+  # Read Lexington-format CSV file, parse, emit LIVES-format CSV output files.
+  def transform(infile = nil)
+    infile ||= source_csv_file
+
+    csv_parse(infile)
+
+    csv_write(businesses_csv_file, Business.members, businesses.uniq)
+    csv_write(inspections_csv_file, Inspection.members, inspections.uniq)
+    csv_write(violations_csv_file, Violation.members, violations.uniq)
+  end
+
+  # Read Lexington-format CSV file, parse into internal data structs.
+  def csv_parse(infile)
+    self.businesses  = []
+    self.inspections = []
+    self.violations  = []
 
     CSV.foreach(infile, headers: true, header_converters: :symbol) do |entry|
       # reporting_area:605 premise_name:"#1 CHINA BUFFET" premise_address_1:"125 E. REYNOLDS ROAD, STE. 120" inspection_date:"12-Apr-2012" inspection_type:1 score:96 owner_name:"#1 CHINA BUFFET" critical_:nil violation:19 inspection_id:805726 violation:19 r_f_insp:nil inspection_id:805726 violation:19 weight:1 critical_yn:"NO"
@@ -45,33 +57,44 @@ class LexToLIVES
       inspections << parse_inspection(entry)
       violations  << parse_violation(entry)
     end
+  end
 
-    csv_write(businesses_csv_file, businesses.uniq)
-    csv_write(inspections_csv_file, inspections.uniq)
-    csv_write(violations_csv_file, violations.uniq)
-  end #transform
+  # Write LIVES-format CSV file from internal data structs.
+  def csv_write(output_file, row_headers, row_structs)
+    csv_opts = {headers: row_headers, write_headers: true}
+
+    CSV.open(output_file, "wb", csv_opts) do |csv|
+      row_structs.each { |row| csv << row.to_a }
+    end
+  end
 
   private
 
   def parse_business(row)
-    [ row[:reporting_area],
-      row[:premise_name],
-      row[:premise_address_1],
-      "Lexington",
-      "KY" ]
+    Business.new.tap do |b|
+      b.business_id = row[:reporting_area]
+      b.name        = row[:premise_name]
+      b.address     = row[:premise_address_1]
+      b.city        = "Lexington"
+      b.state       = "KY"
+    end
   end
 
   def parse_inspection(row)
-    [ row[:reporting_area],
-      row[:score],
-      convert_date_format(row[:inspection_date]) ]
+    Inspection.new.tap do |i|
+      i.business_id = row[:reporting_area]
+      i.score       = row[:score]
+      i.date        = convert_date_format(row[:inspection_date])
+    end
   end
 
   def parse_violation(row)
-    [ row[:reporting_area],
-      convert_date_format(row[:inspection_date]),
-      row[:violation],
-      violation_desc(row[:violation]) ]
+    Violation.new.tap do |v|
+      v.business_id = row[:reporting_area]
+      v.date = convert_date_format(row[:inspection_date])
+      v.code = row[:violation]
+      v.description = violation_desc(row[:violation])
+    end
   end
 
   def convert_date_format(date)
@@ -131,11 +154,6 @@ class LexToLIVES
     descriptions[violation_id.to_i]
   end
 
-  def csv_write(output_file, rows)
-    CSV.open(output_file, "wb") do |csv|
-      rows.each { |row| csv << row }
-    end
-  end
 end
 
 
