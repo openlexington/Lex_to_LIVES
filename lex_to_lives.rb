@@ -4,6 +4,7 @@ require 'csv'
 
 # Usage:
 #   transformer = LexToLIVES.new(file, businesses_file: 'bizniss.csv')
+#   transformer.transform
 #   # outputs bizniss.csv, inspections.csv, violations.csv
 #
 #   transformer = LexToLIVES.new(file)
@@ -140,5 +141,12 @@ end
 
 # Execute as shell script if invoked directly.
 if caller.empty?
-  LexToLIVES.transform ARGV[0]
+  source_file = ARGV[0]
+
+  if source_file.nil? || source_file.empty?
+    puts "Usage: #{__FILE__} <scores_csv_file>"
+    exit 1
+  end
+
+  LexToLIVES.new.transform(source_file)
 end
