@@ -34,36 +34,20 @@ class LexToLIVES
   end
 
   def transform(infile = @source_csv_file)
-    businesses = [["business_id", "name", "address", "city", "state"]]
-    violations = [["business_id", "date", "code", "description"]]
+    businesses  = [["business_id", "name", "address", "city", "state"]]
+    violations  = [["business_id", "date", "code", "description"]]
     inspections = [["business_id", "score", "date"]]
 
     CSV.foreach(infile, headers: true, header_converters: :symbol) do |entry|
       # reporting_area:605 premise_name:"#1 CHINA BUFFET" premise_address_1:"125 E. REYNOLDS ROAD, STE. 120" inspection_date:"12-Apr-2012" inspection_type:1 score:96 owner_name:"#1 CHINA BUFFET" critical_:nil violation:19 inspection_id:805726 violation:19 r_f_insp:nil inspection_id:805726 violation:19 weight:1 critical_yn:"NO"
-
-      # Businesses
-      business_entry = parse_business(entry)
-
-      businesses.push(business_entry)
-
-      # Inspections
-      inspection_entry = parse_inspection(entry)
-
-      inspections.push(inspection_entry)
-
-      # Violations
-      violation_entry = parse_violation(entry)
-
-      violations.push(violation_entry)
+      businesses  << parse_business(entry)
+      inspections << parse_inspection(entry)
+      violations  << parse_violation(entry)
     end
 
-    businesses.uniq!
-    inspections.uniq!
-    violations.uniq!
-
-    csv_write(businesses_csv_file, businesses)
-    csv_write(inspections_csv_file, inspections)
-    csv_write(violations_csv_file, violations)
+    csv_write(businesses_csv_file, businesses.uniq)
+    csv_write(inspections_csv_file, inspections.uniq)
+    csv_write(violations_csv_file, violations.uniq)
   end #transform
 
   private
