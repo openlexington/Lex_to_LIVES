@@ -52,7 +52,7 @@ class LexToLIVES
     self.violations  = []
 
     CSV.foreach(infile, headers: true, header_converters: :symbol) do |entry|
-      # reporting_area:605 premise_name:"#1 CHINA BUFFET" premise_address_1:"125 E. REYNOLDS ROAD, STE. 120" inspection_date:"12-Apr-2012" inspection_type:1 score:96 owner_name:"#1 CHINA BUFFET" critical_:nil violation:19 inspection_id:805726 violation:19 r_f_insp:nil inspection_id:805726 violation:19 weight:1 critical_yn:"NO"
+      # establisment_ids: 30573 reporting_area:605 premise_name:"#1 CHINA BUFFET" premise_address_1:"125 E. REYNOLDS ROAD, STE. 120" inspection_date:"12-Apr-2012" inspection_type:1 score:96 owner_name:"#1 CHINA BUFFET" critical_:nil violation:19 inspection_id:805726 violation:19 r_f_insp:nil inspection_id:805726 violation:19 weight:1 critical_yn:"NO"
       businesses  << parse_business(entry)
       inspections << parse_inspection(entry)
       violations  << parse_violation(entry)
@@ -76,7 +76,7 @@ class LexToLIVES
 
   def parse_business(row)
     Business.new.tap do |b|
-      b.business_id = row[:reporting_area]
+      b.business_id = row[:establishment_ids]
       b.name        = row[:premise_name]
       b.address     = row[:premise_address_1]
       b.city        = "Lexington"
@@ -86,7 +86,7 @@ class LexToLIVES
 
   def parse_inspection(row)
     Inspection.new.tap do |i|
-      i.business_id = row[:reporting_area]
+      i.business_id = row[:establishment_ids]
       i.score       = row[:score]
       i.date        = convert_date_format(row[:inspection_date])
     end
@@ -94,7 +94,7 @@ class LexToLIVES
 
   def parse_violation(row)
     Violation.new.tap do |v|
-      v.business_id = row[:reporting_area]
+      v.business_id = row[:establishment_ids]
       v.date = convert_date_format(row[:inspection_date])
       v.code = row[:violation]
       v.description = violation_desc(row[:violation])
