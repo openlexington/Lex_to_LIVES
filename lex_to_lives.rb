@@ -55,7 +55,9 @@ class LexToLIVES
       # reporting_area:605 premise_name:"#1 CHINA BUFFET" premise_address_1:"125 E. REYNOLDS ROAD, STE. 120" inspection_date:"12-Apr-2012" inspection_type:1 score:96 owner_name:"#1 CHINA BUFFET" critical_:nil violation:19 inspection_id:805726 violation:19 r_f_insp:nil inspection_id:805726 violation:19 weight:1 critical_yn:"NO"
       businesses  << parse_business(entry)
       inspections << parse_inspection(entry)
-      violations  << parse_violation(entry)
+      parse_violation_list(entry).each do |violation|
+        violations << violation
+      end
     end
 
     businesses.uniq!
@@ -76,7 +78,7 @@ class LexToLIVES
 
   def parse_business(row)
     Business.new.tap do |b|
-      b.business_id = row[:reporting_area]
+      b.business_id = row[:est_number]
       b.name        = row[:premise_name]
       b.address     = row[:premise_address_1]
       b.city        = "Lexington"
@@ -86,18 +88,22 @@ class LexToLIVES
 
   def parse_inspection(row)
     Inspection.new.tap do |i|
-      i.business_id = row[:reporting_area]
+      i.business_id = row[:est_number]
       i.score       = row[:score]
       i.date        = convert_date_format(row[:inspection_date])
     end
   end
 
-  def parse_violation(row)
-    Violation.new.tap do |v|
-      v.business_id = row[:reporting_area]
-      v.date = convert_date_format(row[:inspection_date])
-      v.code = row[:violation]
-      v.description = violation_desc(row[:violation])
+  def parse_violation_list(row)
+    return [] if row[:violation_list].nil?
+
+    row[:violation_list].split(' ').map do |violation|
+      Violation.new.tap do |v|
+        v.business_id = row[:est_number]
+        v.date = convert_date_format(row[:inspection_date])
+        v.code = violation
+        v.description = violation_desc(violation)
+      end
     end
   end
 
@@ -109,7 +115,7 @@ class LexToLIVES
     month = months.index(month) || 0
     day = date[0..1]
 
-    sprintf('%d%02d%02d', year.to_i, month.to_i, day.to_i)
+    sprintf('20%d%02d%02d', year.to_i, month.to_i, day.to_i)
   end
 
   def violation_desc(violation_id)
