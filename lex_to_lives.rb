@@ -52,7 +52,6 @@ class LexToLIVES
     self.violations  = []
 
     CSV.foreach(infile, headers: true, header_converters: :symbol) do |entry|
-      # reporting_area:605 premise_name:"#1 CHINA BUFFET" premise_address_1:"125 E. REYNOLDS ROAD, STE. 120" inspection_date:"12-Apr-2012" inspection_type:1 score:96 owner_name:"#1 CHINA BUFFET" critical_:nil violation:19 inspection_id:805726 violation:19 r_f_insp:nil inspection_id:805726 violation:19 weight:1 critical_yn:"NO"
       businesses  << parse_business(entry)
       inspections << parse_inspection(entry)
       parse_violation_list(entry).each do |violation|
