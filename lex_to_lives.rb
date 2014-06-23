@@ -54,9 +54,7 @@ class LexToLIVES
     CSV.foreach(infile, headers: true, header_converters: :symbol) do |entry|
       businesses  << parse_business(entry)
       inspections << parse_inspection(entry)
-      parse_violation_list(entry).each do |violation|
-        violations << violation
-      end
+      self.violations += parse_violation_list(entry)
     end
 
     businesses.uniq!
