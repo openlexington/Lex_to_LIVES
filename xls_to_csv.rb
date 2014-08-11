@@ -2,7 +2,7 @@ require 'rubygems'
 require 'csv'
 require 'roo'
 
-s = Roo::Excel.new('Jan2014_Restaurant Scores.xls')
+s = Roo::Excel.new('most_recent_food_scores.xls')
 
 headers = []
 for i in 1..8
@@ -19,4 +19,4 @@ def csv_write(output_file, row_headers, spreadsheet)
   end
 end
 
-csv_write('test.csv', headers, s)
+csv_write('most_recent_food_scores.csv', headers, s)
