@@ -75,7 +75,7 @@ class LexToLIVES
 
   def parse_business(row)
     Business.new.tap do |b|
-      b.business_id = row[:est_number]
+      b.business_id = row[:est_number].to_i
       b.name        = row[:premise_name]
       b.address     = row[:premise_address_1]
       b.city        = "Lexington"
@@ -85,7 +85,7 @@ class LexToLIVES
 
   def parse_inspection(row)
     Inspection.new.tap do |i|
-      i.business_id = row[:est_number]
+      i.business_id = row[:est_number].to_i
       i.score       = row[:score]
       i.date        = convert_date_format(row[:inspection_date])
     end
@@ -96,7 +96,7 @@ class LexToLIVES
 
     row[:violation_list].split(' ').map do |violation|
       Violation.new.tap do |v|
-        v.business_id = row[:est_number]
+        v.business_id = row[:est_number].to_i
         v.date = convert_date_format(row[:inspection_date])
         v.code = violation
         v.description = violation_desc(violation)
