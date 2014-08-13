@@ -105,14 +105,7 @@ class LexToLIVES
   end
 
   def convert_date_format(date)
-    # 'off-by-one' puts January at index 1 so #index returns the right month number.
-    months = %w(off-by-one Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
-
-    day, month, year = date.split('-')
-    month = months.index(month) || 0
-    day = date[0..1]
-
-    sprintf('20%d%02d%02d', year.to_i, month.to_i, day.to_i)
+    date.gsub('-', '')
   end
 
   def violation_desc(violation_id)

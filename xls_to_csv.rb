@@ -5,7 +5,7 @@ require 'roo'
 s = Roo::Excel.new('most_recent_food_scores.xls')
 
 headers = []
-for i in 1..10
+(1..10).each do |i|
   headers.push(s.cell(1,i).to_sym)
 end
 
