@@ -4,3 +4,8 @@ A Ruby script that takes Lexington Health Department restaurant inspection
 scores to the [LIVES standard](http://www.yelp.com/healthscores).
 
 Assembled by OpenLexington for Code Across America 2013
+
+## To convert health department food scores manually
+* Download [most_recent_food_scores](lexingtonhealthdepartment.org/Portals/0/environmental%20health/most_recent_food_scores.xls) xls file
+* `ruby xls_to_csv.rb` # outputs most_recent_food_scores.csv
+* `./lex_to_lives.rb most_recent_food_scores.csv`
