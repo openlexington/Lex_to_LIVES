@@ -45,6 +45,11 @@ class LexToLIVES
     csv_write(violations_csv_file, Violation.members, violations)
   end
 
+  def exclude?(business)
+    # Yelp can't aggregate the various facility inspections into the master keeneland inspection
+    business.name.match(/^keeneland/i)
+  end
+
   # Read Lexington-format CSV file, parse into internal data structs.
   def csv_parse(infile)
     self.businesses  = []
@@ -52,9 +57,13 @@ class LexToLIVES
     self.violations  = []
 
     CSV.foreach(infile, headers: true, header_converters: :symbol) do |entry|
-      businesses  << parse_business(entry)
-      inspections << parse_inspection(entry)
-      self.violations += parse_violation_list(entry)
+
+      business = parse_business(entry)
+      unless (exclude?(business))
+        businesses  << business
+        inspections << parse_inspection(entry)
+        self.violations += parse_violation_list(entry)
+      end
     end
 
     businesses.uniq!
