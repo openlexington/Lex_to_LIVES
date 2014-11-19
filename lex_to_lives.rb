@@ -45,6 +45,11 @@ class LexToLIVES
     csv_write(violations_csv_file, Violation.members, violations)
   end
 
+  def exclude?(business)
+    # Yelp can't aggregate the various facility inspections into the master keeneland inspection
+    business.name.match(/^keeneland/i)
+  end
+
   # Read Lexington-format CSV file, parse into internal data structs.
   def csv_parse(infile)
     self.businesses  = []
@@ -52,9 +57,13 @@ class LexToLIVES
     self.violations  = []
 
     CSV.foreach(infile, headers: true, header_converters: :symbol) do |entry|
-      businesses  << parse_business(entry)
-      inspections << parse_inspection(entry)
-      self.violations += parse_violation_list(entry)
+
+      business = parse_business(entry)
+      unless exclude?(business)
+        businesses  << business
+        inspections << parse_inspection(entry)
+        self.violations += parse_violation_list(entry)
+      end
     end
 
     businesses.uniq!
@@ -77,7 +86,7 @@ class LexToLIVES
     Business.new.tap do |b|
       b.business_id = row[:est_number].to_i
       b.name        = row[:premise_name]
-      b.address     = row[:premise_address_1]
+      b.address     = row[:premise_address]
       b.city        = "Lexington"
       b.state       = "KY"
     end
@@ -99,7 +108,8 @@ class LexToLIVES
         v.business_id = row[:est_number].to_i
         v.date = convert_date_format(row[:inspection_date])
         v.code = violation
-        v.description = violation_desc(violation)
+        violation_desc = violation_desc(violation)
+        v.description = "Standard not met. #{violation_desc}" if (violation_desc)
       end
     end
   end
@@ -111,44 +121,44 @@ class LexToLIVES
   def violation_desc(violation_id)
     # As a hash for easier maintenance
     descriptions = {
-      1  => 'FOOD SOURCES: Source, Records, Condition, Spoilage, Adulterated',
-      2  => 'FOOD SOURCES: Container, properly labeled',
-      3  => 'FOOD PROTECTION: Potentially hazardous food - safe temp.',
-      4  => 'FOOD PROTECTION: Facilities to maintain product temp.',
-      5  => 'FOOD PROTECTION: Thermometers provided and conspicuous',
-      6  => 'FOOD PROTECTION: Potentially hazardous food properly thawed',
-      7  => 'FOOD PROTECTION: Pot. hazardous food not re-served',
-      8  => 'FOOD PROTECTION: Food Protection - storage, prep, display, service, transp.',
-      9  => 'FOOD PROTECTION: Handling of food (ice) minimized. Dispensing utensils properly stored during use.',
-      10 => 'PERSONNEL: Personnel with infections restricted & proper reporting',
-      11 => 'PERSONNEL: Hands washed and clean, hygienic practices preventing contamination from hands',
-      12 => 'PERSONNEL: Clean clothes, hair restraints',
-      13 => 'PERSONNEL: Supervision: Person in charge present and demonstrates knowledge of food safety principles',
-      14 => 'FOOD EQUIPMENT & UTENSILS: Food (ice) contact surfaces designed, constructed, maintained, installed',
-      15 => 'FOOD EQUIPMENT & UTENSILS: Food/Non-food contact surfaces designed, constructed, maintained, installed',
-      16 => 'FOOD EQUIPMENT & UTENSILS: Dishwashing facilities designed, constructed, maintained, installed, located, operated. Accurate therm., chem. test kits, gauge',
-      17 => 'FOOD EQUIPMENT & UTENSILS: Sanitization rinse, temp., conce., exp. time, equip. utensils, sanitized',
-      18 => 'FOOD EQUIPMENT & UTENSILS: Wiping cloths clean, use restricted',
-      19 => 'FOOD EQUIPMENT & UTENSILS: Food/Non-food contact surfaces of equip/utensils clean',
-      20 => 'FOOD EQUIPMENT & UTENSILS: Storage, handling of clean equipment/utensils/single service articles',
-      21 => 'WATER: Water source, safe, hot & cold',
-      22 => 'SEWAGE: Sewage and waste disposal',
-      23 => 'PLUMBING: Installed, maintained',
-      24 => 'PLUMBING: Cross-connection, back siphonage, backflow',
-      25 => 'TOILET & HANDWASHING FACILITIES: No., conv., designed, installed',
-      26 => 'TOILET & HANDWASHING FACILITIES: Toilet rooms enclosed, self-closing doors, fixtures, good repair, clean, tissue, hand cleansers, sanitary towels/hand-drying devices provided, proper waste receptacles',
-      27 => 'GARBAGE DISPOSAL: Containers or receptacles, covered, adequate number, insect/rodent proof, frequency, clean. Outside storage area enclosures properly constructed, clean, controlled incineration.',
-      28 => 'INSECT, RODENT, ANIMAL CONTROL: No insects, rodents, birds, turtles, other animals',
-      29 => 'OUTER OPENINGS: Outer openings protected',
-      30 => 'FLOORS, WALLS, CEILINGS & VENTILATION: Floors constructed, drained, clean, good repair, covering installation, easily cleanable',
-      31 => 'FLOORS, WALLS, CEILINGS & VENTILATION: Walls, ceiling, attached equipment constructed, good repair, clean surfaces, easily cleanable. Rooms and equipment vented as required.',
-      32 => 'LIGHTING: Lighting provided as required, fixtures shielded',
-      33 => 'OTHER OPERATIONS: Toxic Items properly stored, labeled, used',
-      34 => 'OTHER OPERATIONS: Premises main, free of litter, misc. articles, cleaning/maint. equip. properly stored. Authorized personnel rooms clean, lockers provided, located, used.',
-      35 => 'OTHER OPERATIONS: Separation from living/sleeping quarters. Laundry, clean or soiled linen properly stored.',
-      36 => 'CONFORMANCE WITH APPROVED PROCEDURES: Compliance with variance, specialized process, and HACCP plan',
-      37 => 'HIGHLY SUSCEPTIBLE POPULATIONS: Pasteurized foods used; prohibited foods not offered',
-      38 => 'CONSUMER ADVISORY: Consumer advisory provided for raw or undercooked food'
+      1 => 'Food Sources: Source, Records, Condition, Spoilage, Adulterated',
+      2 => 'Food Sources: Container, properly labeled',
+      3 => 'Food Protection: Potentially hazardous food - safe temp.',
+      4 => 'Food Protection: Facilities to maintain product temp.',
+      5 => 'Food Protection: Thermometers provided and conspicuous',
+      6 => 'Food Protection: Potentially hazardous food properly thawed',
+      7 => 'Food Protection: Pot. hazardous food not re-served',
+      8 => 'Food Protection: Food Protection - storage, prep, display, service, transp.',
+      9 => 'Food Protection: Handling of food (ice) minimized. Dispensing utensils properly stored during use.',
+      10 => 'Personnel: Personnel with infections restricted & proper reporting',
+      11 => 'Personnel: Hands washed and clean, hygienic practices preventing contamination from hands',
+      12 => 'Personnel: Clean clothes, hair restraints',
+      13 => 'Personnel: Supervision: Person in charge present and demonstrates knowledge of food safety principles',
+      14 => 'Food Equipment & Utensils: Food (ice) contact surfaces designed, constructed, maintained, installed',
+      15 => 'Food Equipment & Utensils: Food/Non-food contact surfaces designed, constructed, maintained, installed',
+      16 => 'Food Equipment & Utensils: Dishwashing facilities designed, constructed, maintained, installed, located, operated. Accurate therm., chem. test kits, gauge',
+      17 => 'Food Equipment & Utensils: Sanitization rinse, temp., conce., exp. time, equip. utensils, sanitized',
+      18 => 'Food Equipment & Utensils: Wiping cloths clean, use restricted',
+      19 => 'Food Equipment & Utensils: Food/Non-food contact surfaces of equip/utensils clean',
+      20 => 'Food Equipment & Utensils: Storage, handling of clean equipment/utensils/single service articles',
+      21 => 'Water: Water source, safe, hot & cold',
+      22 => 'Sewage: Sewage and waste disposal',
+      23 => 'Plumbing: Installed, maintained',
+      24 => 'Plumbing: Cross-connection, back siphonage, backflow',
+      25 => 'Toilet & Handwashing Facilities: No., conv., designed, installed',
+      26 => 'Toilet & Handwashing Facilities: Toilet rooms enclosed, self-closing doors, fixtures, good repair, clean, tissue, hand cleansers, sanitary towels/hand-drying devices provided, proper waste receptacles',
+      27 => 'Garbage Disposal: Containers or receptacles, covered, adequate number, insect/rodent proof, frequency, clean. Outside storage area enclosures properly constructed, clean, controlled incineration.',
+      28 => 'Insect, Rodent, Animal Control: No insects, rodents, birds, turtles, other animals',
+      29 => 'Outer Openings: Outer openings protected',
+      30 => 'Floors, Walls, Ceilings & Ventilation: Floors constructed, drained, clean, good repair, covering installation, easily cleanable',
+      31 => 'Floors, Walls, Ceilings & Ventilation: Walls, ceiling, attached equipment constructed, good repair, clean surfaces, easily cleanable. Rooms and equipment vented as required.',
+      32 => 'Lighting: Lighting provided as required, fixtures shielded',
+      33 => 'Other Operations: Toxic Items properly stored, labeled, used',
+      34 => 'Other Operations: Premises main, free of litter, misc. articles, cleaning/maint. equip. properly stored. Authorized personnel rooms clean, lockers provided, located, used.',
+      35 => 'Other Operations: Separation from living/sleeping quarters. Laundry, clean or soiled linen properly stored.',
+      36 => 'Conformance With Approved Procedures: Compliance with variance, specialized process, and HACCP plan',
+      37 => 'Highly Susceptible Populations: Pasteurized foods used; prohibited foods not offered',
+      38 => 'Consumer Advisory: Consumer advisory provided for raw or undercooked food',
     }
 
     descriptions[violation_id.to_i]
