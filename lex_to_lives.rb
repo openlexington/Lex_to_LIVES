@@ -59,7 +59,7 @@ class LexToLIVES
     CSV.foreach(infile, headers: true, header_converters: :symbol) do |entry|
 
       business = parse_business(entry)
-      unless (exclude?(business))
+      unless exclude?(business)
         businesses  << business
         inspections << parse_inspection(entry)
         self.violations += parse_violation_list(entry)
