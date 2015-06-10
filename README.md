@@ -9,4 +9,4 @@ Assembled by OpenLexington for Code Across America 2013
 * Download [most_recent_food_scores](http://www.lexingtonhealthdepartment.org/Portals/0/environmental%20health/most_recent_food_scores.xls) xls file
 * `ruby xls_to_csv.rb` # outputs most_recent_food_scores.csv
 * `./lex_to_lives.rb most_recent_food_scores.csv`
-* zip most_recent_food_scores.zip -xi {businesses,inspections,violations}.csv
+* `zip most_recent_food_scores.zip {businesses,inspections,violations}.csv`
