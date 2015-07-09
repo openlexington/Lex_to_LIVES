@@ -115,7 +115,7 @@ class LexToLIVES
   end
 
   def convert_date_format(date)
-    date.gsub('-', '')
+    DateTime.strptime(date, '%m/%d/%y').strftime('%Y%m%d')
   end
 
   def violation_desc(violation_id)
