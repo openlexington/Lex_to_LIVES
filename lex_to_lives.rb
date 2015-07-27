@@ -85,7 +85,7 @@ class LexToLIVES
   def parse_business(row)
     Business.new.tap do |b|
       b.business_id = row[:est_number].to_i
-      b.name        = row[:premise_name]
+      b.name        = convert_business_format(row[:premise_name])
       b.address     = row[:premise_address]
       b.city        = "Lexington"
       b.state       = "KY"
@@ -116,6 +116,10 @@ class LexToLIVES
 
   def convert_date_format(date)
     DateTime.strptime(date, '%m/%d/%y').strftime('%Y%m%d')
+  end
+
+  def convert_business_format(string)
+    string.gsub(/(?:@|-|\/)/, ' ')
   end
 
   def violation_desc(violation_id)
