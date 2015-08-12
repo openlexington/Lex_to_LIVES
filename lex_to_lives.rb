@@ -46,8 +46,8 @@ class LexToLIVES
   end
 
   def exclude?(business)
-    # Yelp can't aggregate the various facility inspections into the master keeneland inspection
-    business.name.match(/^keeneland/i)
+    # Yelp can't aggregate kiosks/concession stands
+    business.name.match(/(?:keeneland|afc sushi kroger|horse park|commonwealth stadium)/i)
   end
 
   # Read Lexington-format CSV file, parse into internal data structs.
