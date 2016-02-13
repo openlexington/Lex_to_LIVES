@@ -6,7 +6,7 @@ s = Roo::Excel.new('most_recent_food_scores.xls')
 
 headers = []
 (1..10).each do |i|
-  headers.push(s.cell(1,i).to_sym)
+  headers.push(s.cell(1,i).to_s.to_sym)
 end
 
 def csv_write(output_file, row_headers, spreadsheet)
@@ -14,7 +14,7 @@ def csv_write(output_file, row_headers, spreadsheet)
 
   CSV.open(output_file, "wb", csv_opts) do |csv|
     for i in 2..spreadsheet.last_row do
-      csv << spreadsheet.row(i).compact
+      csv << spreadsheet.row(i)
     end
   end
 end

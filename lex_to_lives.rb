@@ -95,7 +95,8 @@ class LexToLIVES
   def parse_inspection(row)
     Inspection.new.tap do |i|
       i.business_id = row[:est_number].to_i
-      i.score       = row[:score]
+      # if no score provided, don't make it zero
+      i.score       = (row[:score].nil? ? nil : row[:score].to_i)
       i.date        = convert_date_format(row[:inspection_date])
     end
   end
@@ -115,7 +116,7 @@ class LexToLIVES
   end
 
   def convert_date_format(date)
-    DateTime.strptime(date, '%m/%d/%y').strftime('%Y%m%d')
+    DateTime.strptime(date, '%Y-%m-%d').strftime('%Y%m%d')
   end
 
   def convert_business_format(string)
