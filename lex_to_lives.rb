@@ -86,7 +86,7 @@ class LexToLIVES
     Business.new.tap do |b|
       b.business_id = row[:est_number].to_i
       b.name        = convert_business_format(row[:premise_name])
-      b.address     = row[:premise_address]
+      b.address     = row[:premise_address_1]
       b.city        = "Lexington"
       b.state       = "KY"
     end
