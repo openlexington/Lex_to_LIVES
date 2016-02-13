@@ -1,6 +1,9 @@
+#!/usr/bin/env ruby
+
 require 'rubygems'
 require 'csv'
-require 'roo'
+require 'roo-xls'
+require './lex_to_lives'
 
 s = Roo::Excel.new('most_recent_food_scores.xls')
 
@@ -19,4 +22,7 @@ def csv_write(output_file, row_headers, spreadsheet)
   end
 end
 
-csv_write('most_recent_food_scores.csv', headers, s)
+temp_file = Tempfile.new('most_recent_food_scores.csv')
+csv_write(temp_file.path, headers, s)
+
+LexToLIVES.new.transform(temp_file.path)
