@@ -5,9 +5,12 @@ scores to the [LIVES standard](http://www.yelp.com/healthscores).
 
 Assembled by OpenLexington for Code Across America 2013
 
-## To convert health department food scores manually
-* Download [most_recent_food_scores](http://www.lexingtonhealthdepartment.org/Portals/0/environmental%20health/most_recent_food_scores.xls) xls file
-* `ruby xls_to_csv.rb` # outputs most_recent_food_scores.csv but the xls parser skips empty cells causing errors
-  * instead upload xls to google docs and export as most_recent_food_scores.csv
-* `./lex_to_lives.rb most_recent_food_scores.csv`
-* `zip most_recent_food_scores.zip {businesses,inspections,violations}.csv`
+## To convert health department food scores
+
+`mv .env-sample .env`
+Add your s3 creds env
+
+# extracts scores from health department site
+# transforms them to lives format
+# loads to s3 bucket
+`ruby lives_etl.rb`
