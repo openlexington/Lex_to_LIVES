@@ -10,4 +10,4 @@ Assembled by OpenLexington for Code Across America 2013
 * `ruby xls_to_csv.rb` # outputs most_recent_food_scores.csv but the xls parser skips empty cells causing errors
   * instead upload xls to google docs and export as most_recent_food_scores.csv
 * `./lex_to_lives.rb most_recent_food_scores.csv`
-* `zip most_recent_food_scores.zip {businesses,inspections,violations}.csv`
+* `zip most_recent_food_scores.zip {businesses,inspections,violations,feed_info}.csv`
