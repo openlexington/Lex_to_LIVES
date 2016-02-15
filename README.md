@@ -8,9 +8,23 @@ Assembled by OpenLexington for Code Across America 2013
 ## To convert health department food scores
 
 `mv .env-sample .env`
-Add your s3 creds env
+Add your GitHub creds (or use a dummy GitHub account for automation)
 
 # extracts scores from health department site
 # transforms them to lives format
 # loads to s3 bucket
-`ruby lives_etl.rb`
+`bundle exec ruby lives_etl.rb`
+
+## Deploy to Heroku
+
+Install buildpack to enable rugged gem
+
+```
+$ heroku create my-etl-app
+$ heroku buildpacks:set https://github.com/ddollar/heroku-buildpack-multi.git
+$ git push heroku master
+$ heroku run bundle exec irb
+
+irb(main):001:0> require 'rugged'
+=> true
+```
