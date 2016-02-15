@@ -28,10 +28,11 @@ index = repo.index
 
 File.open(File.join(TEMP_DIR, 'feed_info.csv'), 'w') do |f|
   f.write("Now: #{Time.now}")
-  index.add path: 'feed_info.csv',
-    oid: (Rugged::Blob.from_workdir repo, 'feed_info.csv'),
-    mode: 0100644
 end
+
+index.add path: 'feed_info.csv',
+  oid: (Rugged::Blob.from_workdir repo, 'feed_info.csv'),
+  mode: 0100644
 
 # (6)
 commit_tree = index.write_tree repo

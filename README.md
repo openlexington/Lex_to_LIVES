@@ -22,6 +22,8 @@ Install buildpack to enable rugged gem
 ```
 $ heroku create my-etl-app
 $ heroku buildpacks:set https://github.com/ddollar/heroku-buildpack-multi.git
+$ heroku config:set GITHUB_USER=foo
+$ heroku config:set GITHUB_PASS=bar
 $ git push heroku master
 $ heroku run bundle exec irb
 
