@@ -19,56 +19,27 @@ git_name = 'Erik Schwartz'
 clone_url = 'https://github.com/eeeschwartz/lexingtonky-lives-data.git'
 repo = Rugged::Repository.clone_at(clone_url, TEMP_DIR)
 
-# (2)
 repo.checkout 'refs/heads/gh-pages'
-
-# (3)
 index = repo.index
 
+def save_to_tempfile(index, repo, url)
+  uri = URI.parse(url)
+  Net::HTTP.start(uri.host, uri.port) do |http|
+    resp = http.get(uri.path)
 
-File.open(File.join(TEMP_DIR, 'feed_info.csv'), 'w') do |f|
-  f.write("Now: #{Time.now}")
+    File.open(File.join(TEMP_DIR, 'most_recent_food_scores.xls'), 'w') do |file|
+      file.binmode
+      file.write(resp.body)
+      file.flush
+    end
+
+    index.add(path: 'most_recent_food_scores.xls',
+      oid: Rugged::Blob.from_workdir(repo, 'most_recent_food_scores.xls'),
+      mode: 0100644)
+  end
 end
 
-index.add path: 'feed_info.csv',
-  oid: (Rugged::Blob.from_workdir repo, 'feed_info.csv'),
-  mode: 0100644
 
-# (6)
-commit_tree = index.write_tree repo
-
-# (7)
-index.write
-
-# (8)
-commit_author = { email: git_email, name: git_name, time: Time.now }
-Rugged::Commit.create repo,
-  author: commit_author,
-  committer: commit_author,
-  message: 'Testing the rugged gem',
-  parents: [repo.head.target],
-  tree: commit_tree,
-  update_ref: 'HEAD'
-
-user = ENV['GITHUB_USER']
-pass = ENV['GITHUB_PASS']
-
-credentials = Rugged::Credentials::UserPassword.new(username: user, password: pass)
-
-repo.push('origin', ['refs/heads/gh-pages'], { credentials: credentials })
-#
-# def save_to_tempfile(url)
-#   uri = URI.parse(url)
-#   Net::HTTP.start(uri.host, uri.port) do |http|
-#     resp = http.get(uri.path)
-#     file = File.new('most_recent_food_scores.xls', TEMP_DIR)
-#     file.binmode
-#     file.write(resp.body)
-#     file.flush
-#     file
-#   end
-# end
-#
 # def csv_write(output_file, row_headers, spreadsheet)
 #   csv_opts = {headers: row_headers, write_headers: true}
 #
@@ -98,7 +69,7 @@ repo.push('origin', ['refs/heads/gh-pages'], { credentials: credentials })
 #   zip_file
 # end
 #
-# xls_file = save_to_tempfile(HEALTH_DEPT_PERMALINK)
+xls_file = save_to_tempfile(index, repo, HEALTH_DEPT_PERMALINK)
 #
 # xls = Roo::Excel.new(xls_file)
 # headers = []
@@ -110,4 +81,22 @@ repo.push('origin', ['refs/heads/gh-pages'], { credentials: credentials })
 # csv_write(csv_file.path, headers, xls)
 # zip_file = to_lives_zip(csv_file)
 
-p `cat #{TEMP_DIR}/feed_info.csv`
+commit_tree = index.write_tree(repo)
+index.write
+commit_author = { email: git_email, name: git_name, time: Time.now }
+Rugged::Commit.create repo,
+  author: commit_author,
+  committer: commit_author,
+  message: 'Commit xls file',
+  parents: [repo.head.target],
+  tree: commit_tree,
+  update_ref: 'HEAD'
+
+user = ENV['GITHUB_USER']
+pass = ENV['GITHUB_PASS']
+
+credentials = Rugged::Credentials::UserPassword.new(username: user, password: pass)
+
+repo.push('origin', ['refs/heads/gh-pages'], { credentials: credentials })
+
+# p `ls -al #{TEMP_DIR}/most_recent_food_scores.xls\n`

@@ -30,3 +30,6 @@ $ heroku run bundle exec irb
 irb(main):001:0> require 'rugged'
 => true
 ```
+
+Warning: sometimes the buildpack succeeds on install and then fails on
+later deploys. Not sure why! I've had to recreate the app to get around this.
