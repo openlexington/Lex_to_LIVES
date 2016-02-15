@@ -1,12 +1,15 @@
+GIT
+  remote: git://github.com/libgit2/rugged.git
+  revision: 1db069fa9e9164144c0b24b9e30194c00a618b08
+  branch: master
+  submodules: true
+  specs:
+    rugged (0.24.0b12)
+
 GEM
   remote: https://rubygems.org/
   specs:
-    aws (2.10.2)
-      http_connection
-      uuidtools
-      xml-simple
     dotenv (2.1.0)
-    http_connection (1.4.4)
     mini_portile2 (2.0.0)
     nokogiri (1.6.7.2)
       mini_portile2 (~> 2.0.0.rc2)
@@ -21,17 +24,15 @@ GEM
     rubyzip (1.1.7)
     spreadsheet (1.1.1)
       ruby-ole (>= 1.0)
-    uuidtools (2.1.5)
-    xml-simple (1.1.5)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  aws
   dotenv
   roo-xls
   rubyzip
+  rugged!
 
 BUNDLED WITH
    1.10.6
