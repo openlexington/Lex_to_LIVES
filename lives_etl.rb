@@ -11,11 +11,16 @@ Dotenv.load
 
 HEALTH_DEPT_PERMALINK = 'http://www.lexingtonhealthdepartment.org/Portals/0/environmental%20health/most_recent_food_scores.xls'
 
+TEMPDIR = Dir.mktmpdir
+clone_url = 'https://github.com/eeeschwartz/lexingtonky-lives-data.git'
+repo = Rugged::Repository.clone_at(clone_url, TEMPDIR)
+repo.checkout('refs/heads/gh-pages')
+
 def save_to_tempfile(url)
   uri = URI.parse(url)
   Net::HTTP.start(uri.host, uri.port) do |http|
     resp = http.get(uri.path)
-    file = Tempfile.new(['foo', '.xls'])
+    file = File.open(File.join(TEMPDIR, 'most_recent_food_scores.xls'), 'w+')
     file.binmode
     file.write(resp.body)
     file.flush
@@ -35,16 +40,19 @@ end
 
 def to_lives_zip(csv_file)
   outfiles = {
-    businesses_file: Tempfile.new('businesses.csv').path,
-    inspections_file: Tempfile.new('inspections.csv').path,
-    violations_file: Tempfile.new('violations.csv').path,
+    businesses_file: File.join(TEMPDIR, 'businesses.csv'),
+    inspections_file: File.join(TEMPDIR, 'inspections.csv'),
+    violations_file: File.join(TEMPDIR, 'violations.csv'),
+    feed_info_file: File.join(TEMPDIR, 'feed_info.csv'),
   }
 
   LexToLIVES.new(csv_file.path, outfiles).transform
 
-  zip_file = Tempfile.new("most_recent_food_scores.zip")
+  zip_file = File.join(TEMPDIR, 'most_recent_food_scores.zip')
 
-  Zip::File.open(zip_file.path, Zip::File::CREATE) do |zipfile|
+  File.delete(zip_file) if File.exists?(zip_file)
+
+  Zip::File.open(zip_file, Zip::File::CREATE) do |zipfile|
     outfiles.each do |key, filename|
       zipfile.add(key.to_s.sub('_file', '.csv'), filename)
     end
@@ -52,20 +60,23 @@ def to_lives_zip(csv_file)
   zip_file
 end
 
-def push_to_github(files)
-  git_email = 'erik+civichelper@erikschwartz.net'
-  git_name = 'Civic Helper Bot'
+def stage_changes(repo)
+  should_push = true
+  repo.index.diff.each_delta do |d|
+    if (d.old_file[:path] == 'most_recent_food_scores.csv')
+      should_push = true
+    end
 
-  clone_url = 'https://github.com/eeeschwartz/lexingtonky-lives-data.git'
-  repo = Rugged::Repository.clone_at(clone_url, Dir.mktmpdir)
-  repo.checkout('refs/heads/gh-pages')
-
-  files.each do |git_path, file_path|
-    repo.index.add(path: git_path,
-      oid: Rugged::Blob.from_disk(repo, file_path),
+    repo.index.add(path: d.new_file[:path],
+      oid: Rugged::Blob.from_workdir(repo, d.new_file[:path]),
       mode: 0100644)
   end
+  should_push
+end
 
+def push_to_github(repo)
+  git_email = 'erik+civichelper@erikschwartz.net'
+  git_name = 'Civic Helper Bot'
   commit_tree = repo.index.write_tree(repo)
   repo.index.write
   commit_author = { email: git_email, name: git_name, time: Time.now }
@@ -78,7 +89,8 @@ def push_to_github(files)
     tree: commit_tree,
     update_ref: 'HEAD')
 
-  credentials = Rugged::Credentials::UserPassword.new(username: ENV['GITHUB_USER'], password: ENV['GITHUB_PASS'])
+  credentials = Rugged::Credentials::UserPassword.new(username: ENV['GITHUB_USER'],
+    password: ENV['GITHUB_PASS'])
 
   repo.push('origin', ['refs/heads/gh-pages'], { credentials: credentials })
 end
@@ -91,12 +103,8 @@ headers = []
   headers.push(xls.cell(1,i).to_s.to_sym)
 end
 
-csv_file = Tempfile.new('most_recent_food_scores.csv')
+csv_file = File.new(File.join(TEMPDIR, 'most_recent_food_scores.csv'), 'w+')
 csv_write(csv_file.path, headers, xls)
 zip_file = to_lives_zip(csv_file)
 
-push_to_github({
-  'most_recent_food_scores.xls' => xls_file.path,
-  'most_recent_food_scores.csv' => csv_file.path,
-  'most_recent_food_scores.zip' => zip_file.path,
-})
+# push_to_github(repo) if stage_changes(repo)

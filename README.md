@@ -31,5 +31,10 @@ irb(main):001:0> require 'rugged'
 => true
 ```
 
-Warning: sometimes the buildpack succeeds on install and then fails on
-later deploys. Not sure why! I've had to recreate the app to get around this.
+Warning: The buildpack succeeds on initial deploy and then fails on
+later deploys. This fixes the issue:
+
+```
+heroku plugins:install https://github.com/heroku/heroku-repo.git
+heroku repo:purge_cache -a my-etl-app
+```

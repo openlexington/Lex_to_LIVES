@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-
 require 'csv'
 
 # Usage:
@@ -18,6 +16,7 @@ class LexToLIVES
   attr_accessor :businesses_csv_file
   attr_accessor :inspections_csv_file
   attr_accessor :violations_csv_file
+  attr_accessor :feed_info_csv_file
 
   attr_accessor :businesses
   attr_accessor :violations
@@ -26,12 +25,14 @@ class LexToLIVES
   class Business < Struct.new(:business_id, :name, :address, :city, :state); end
   class Violation < Struct.new(:business_id, :date, :code, :description); end
   class Inspection < Struct.new(:business_id, :score, :date); end
+  class FeedInfo < Struct.new(:feed_date,:feed_version,:municipality_name,:municipality_url,:contact_email); end
 
   def initialize(source_file = nil, options = {})
     @source_csv_file = source_file
     @businesses_csv_file = options[:businesses_file] || 'businesses.csv'
     @inspections_csv_file = options[:inspections_file] || 'inspections.csv'
     @violations_csv_file = options[:violations_file] || 'violations.csv'
+    @feed_info_csv_file = options[:feed_info_file] || 'feed_info.csv'
   end
 
   # Read Lexington-format CSV file, parse, emit LIVES-format CSV output files.
@@ -43,6 +44,7 @@ class LexToLIVES
     csv_write(businesses_csv_file, Business.members, businesses)
     csv_write(inspections_csv_file, Inspection.members, inspections)
     csv_write(violations_csv_file, Violation.members, violations)
+    csv_write(feed_info_csv_file, FeedInfo.members, feed_info)
   end
 
   def exclude?(business)
@@ -69,6 +71,17 @@ class LexToLIVES
     businesses.uniq!
     inspections.uniq!
     violations.uniq!
+  end
+
+  def feed_info
+    info = FeedInfo.new.tap do |f|
+      f.feed_date         = Date.today.strftime('%Y%m%d')
+      f.feed_version      = '2.0'
+      f.municipality_name = 'Lexington-Fayette County'
+      f.municipality_url  = 'http://lexingtonhealthdepartment.org/ProgramsServices/RestaurantInspections/tabid/87/Default.aspx'
+      f.contact_email     = 'healthscores@openexington.org'
+    end
+    [info]
   end
 
   # Write LIVES-format CSV file from internal data structs.
