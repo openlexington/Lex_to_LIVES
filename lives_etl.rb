@@ -61,8 +61,9 @@ def to_lives_zip(csv_file)
 end
 
 def stage_changes(repo)
-  should_push = true
+  should_push = false
   repo.index.diff.each_delta do |d|
+    # only push if scores have changed
     if (d.old_file[:path] == 'most_recent_food_scores.csv')
       should_push = true
     end
@@ -107,4 +108,4 @@ csv_file = File.new(File.join(TEMPDIR, 'most_recent_food_scores.csv'), 'w+')
 csv_write(csv_file.path, headers, xls)
 zip_file = to_lives_zip(csv_file)
 
-# push_to_github(repo) if stage_changes(repo)
+push_to_github(repo) if stage_changes(repo)

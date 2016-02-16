@@ -10,9 +10,10 @@ Assembled by OpenLexington for Code Across America 2013
 `mv .env-sample .env`
 Add your GitHub creds (or use a dummy GitHub account for automation)
 
-# extracts scores from health department site
-# transforms them to lives format
-# loads to s3 bucket
+* extracts scores from health department site
+* transforms them to lives format
+* loads to github repo
+
 `bundle exec ruby lives_etl.rb`
 
 ## Deploy to Heroku
