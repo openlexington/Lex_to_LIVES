@@ -32,8 +32,8 @@ def csv_write(output_file, row_headers, spreadsheet)
   csv_opts = {headers: row_headers, write_headers: true}
 
   CSV.open(output_file, "wb", csv_opts) do |csv|
-    for i in 2..spreadsheet.last_row do
-      csv << spreadsheet.row(i)
+    (2..spreadsheet.last_row).each do |row|
+      csv << spreadsheet.row(row)
     end
   end
 end
@@ -64,7 +64,7 @@ def stage_changes(repo)
   should_push = false
   repo.index.diff.each_delta do |d|
     # only push if scores have changed
-    if (d.old_file[:path] == 'most_recent_food_scores.csv')
+    if d.old_file[:path] == 'most_recent_food_scores.csv'
       should_push = true
     end
 
@@ -90,8 +90,8 @@ def push_to_github(repo)
     tree: commit_tree,
     update_ref: 'HEAD')
 
-  credentials = Rugged::Credentials::UserPassword.new(username: ENV['GITHUB_USER'],
-    password: ENV['GITHUB_PASS'])
+  credentials = Rugged::Credentials::UserPassword.new(username: ENV.fetch('GITHUB_USER'),
+    password: ENV.fetch('GITHUB_PASS'))
 
   repo.push('origin', ['refs/heads/gh-pages'], { credentials: credentials })
 end
