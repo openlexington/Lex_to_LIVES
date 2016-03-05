@@ -5,18 +5,18 @@ scores to the [LIVES standard](http://www.yelp.com/healthscores).
 
 Assembled by OpenLexington for Code Across America 2013
 
-## To convert health department food scores
+## To convert health department food scores manually
 
 `mv .env-sample .env`
 Add your GitHub creds (or use a dummy GitHub account for automation)
 
 * extracts scores from health department site
 * transforms them to lives format
-* loads to github repo
+* loads to [github repo](https://github.com/openlexington/health-department-yelp-data)
 
 `bundle exec ruby lives_etl.rb`
 
-## Deploy to Heroku
+## Deploy to Heroku for automation
 
 Install buildpack to enable rugged gem
 
@@ -39,3 +39,10 @@ later deploys. This fixes the issue:
 heroku plugins:install https://github.com/heroku/heroku-repo.git
 heroku repo:purge_cache -a my-etl-app
 ```
+
+## Enable automated ETL
+
+Add Heroku Scheduler add-on to Heroku instance
+
+set to run daily:
+`bundle exec ruby lives_etl.erb`
