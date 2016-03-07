@@ -12,7 +12,7 @@ Dotenv.load
 HEALTH_DEPT_PERMALINK = 'http://www.lexingtonhealthdepartment.org/Portals/0/environmental%20health/most_recent_food_scores.xls'
 
 TEMPDIR = Dir.mktmpdir
-clone_url = 'https://github.com/eeeschwartz/lexingtonky-lives-data.git'
+clone_url = 'https://github.com/openlexington/health-department-yelp-data.git'
 repo = Rugged::Repository.clone_at(clone_url, TEMPDIR)
 repo.checkout('refs/heads/gh-pages')
 
