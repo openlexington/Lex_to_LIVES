@@ -9,7 +9,7 @@ require 'net/http'
 require 'dotenv'
 Dotenv.load
 
-HEALTH_DEPT_PERMALINK = 'http://www.lexingtonhealthdepartment.org/Portals/0/environmental%20health/most_recent_food_scores.xls'
+HEALTH_DEPT_PERMALINK = 'http://lexingtonhealthdepartment.org/Portals/0/most_recent_food_scores.xls'
 
 TEMPDIR = Dir.mktmpdir
 clone_url = 'https://github.com/openlexington/health-department-yelp-data.git'
