@@ -49,4 +49,10 @@ heroku repo:purge_cache -a my-etl-app
 Add Heroku Scheduler add-on to Heroku instance
 
 set to run daily:
-`bundle exec ruby lives_etl.erb`
+`bundle exec ruby lives_etl.rb`
+
+## To check when scores have changed on the Health Dept page
+
+Use http://www.changedetection.com/monitor.html
+
+That way you get a notification that the scores have changed and the automation should have kicked off.
