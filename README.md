@@ -49,7 +49,10 @@ heroku repo:purge_cache -a my-etl-app
 Add Heroku Scheduler add-on to Heroku instance
 
 set to run daily:
-`bundle exec ruby lives_etl.rb`
+
+`bundle exec ruby lives_etl.rb <permalinik to health scores>`
+
+eg `bundle exec ruby lives_etl.rb "http://lexingtonhealthdepartment.org/Portals/0/environmental%20health/most_recent_food_scores.xls"`
 
 ## To check when scores have changed on the Health Dept page
 
